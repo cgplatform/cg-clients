@@ -1,0 +1,11 @@
+# Enviroment #
+######################
+.env
+
+# macOS Files #
+######################
+.DS_Store?
+ehthumbs.db
+Icon?
+Thumbs.db
+*.DS_Store
