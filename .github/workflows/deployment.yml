@@ -7,7 +7,7 @@ on:
 env:
   GCP_PROJECT_ID: "start2play"
   GKE_CLUSTER: "s2p-cluster"
-  GKE_ZONE: "us-central1-c"
+  GKE_ZONE: "us-central1-a"
   SERVICE_NAME: ${{ github.event.repository.name }}
 
 jobs:
