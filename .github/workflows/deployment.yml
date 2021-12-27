@@ -1,0 +1,55 @@
+name: Build and Deploy to Google Kubernetes Engine
+
+on:
+  push:
+    branches: [sandbox]
+
+env:
+  GCP_PROJECT_ID: "start2play"
+  GKE_CLUSTER: "s2p-cluster"
+  GKE_ZONE: "us-central1-a"
+  SERVICE_NAME: ${{ github.event.repository.name }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Get Branch
+        run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | tr / -)" >> $GITHUB_ENV
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.17.3
+
+      - uses: google-github-actions/setup-gcloud@v0.3.0
+        with:
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          project_id: ${{ env.GCP_PROJECT_ID }}
+
+      - uses: google-github-actions/get-gke-credentials@v0.2.1
+        with:
+          cluster_name: ${{ env.GKE_CLUSTER }}
+          location: ${{ env.GKE_ZONE }}
+          credentials: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Build
+        run: go build
+
+      - name: Configure Docker
+        run: gcloud auth configure-docker --quiet
+
+      - name: Build Docker Image
+        run: docker build -f .docker/Dockerfile -t "gcr.io/$GCP_PROJECT_ID/$BRANCH_NAME/$SERVICE_NAME" .
+
+      - name: Publish Docker Image
+        run: |-
+          docker push "gcr.io/$GCP_PROJECT_ID/$BRANCH_NAME/$SERVICE_NAME"
+
+      - name: Deploy
+        run: |-
+          envsubst < .kubernetes/deployment.yml | kubectl apply -f -
+          kubectl rollout status deployment/$SERVICE_NAME
+          kubectl rollout restart deployment/$SERVICE_NAME
