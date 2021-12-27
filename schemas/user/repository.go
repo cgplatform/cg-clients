@@ -107,3 +107,22 @@ func FilterFrom(args map[string]interface{}) bson.M {
 
 	return result
 }
+
+func TryLogin(email string, password string) (boolean, string){
+
+	collection := database.GetCollection("users")
+
+	filter := bson.M{"email": email}
+	result, err := collection.Find(ctx,filter)
+	
+	if(err!=nil){
+		return false, ""
+	}
+
+	if(result.password!=password){
+		return false, "";
+	}
+
+	return true, result._id;
+
+}

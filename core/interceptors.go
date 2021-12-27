@@ -19,11 +19,11 @@ func HttpInterceptor(pointers *Pointers, responseWriter http.ResponseWriter, req
 	fields := pointers.Fields
 
 	var p post
-
 	if err := json.NewDecoder(request.Body).Decode(&p); err != nil {
 		responseWriter.WriteHeader(400)
 		return
 	}
+	
 
 	result := graphql.Do(graphql.Params{
 		Context:        request.Context(),
@@ -32,7 +32,7 @@ func HttpInterceptor(pointers *Pointers, responseWriter http.ResponseWriter, req
 		VariableValues: p.Variables,
 		OperationName:  p.Operation,
 		RootObject: map[string]interface{}{
-			"fields": fields,
+			"fields": fields
 		},
 	})
 

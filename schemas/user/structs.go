@@ -10,3 +10,16 @@ type User struct {
 }
 
 var UserInstance = User{}
+
+type LoginRequest struct {
+	Email      string `bson:"email"`
+	Password  string `bson:"password"`
+}
+
+var LoginRequestInstance = LoginRequest{}
+
+type LoginResponse struct {
+	Token	string `bson:"token"`
+}
+
+var LoginResponseInstance = LoginResponse{}

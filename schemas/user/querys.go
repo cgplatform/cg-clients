@@ -2,7 +2,7 @@ package user
 
 import (
 	"es-api/core/reflection"
-
+	"es-api/core/services"
 	"github.com/graphql-go/graphql"
 )
 
@@ -28,4 +28,30 @@ func FindByResolver(params graphql.ResolveParams, session *reflection.Session) (
 	} else {
 		return users, nil
 	}
+}
+
+var Login = &reflection.RootField{
+	List:           false,
+	Name:           "login",
+	Resolve:        LoginResolver,
+	RequestStruct:  LoginRequest,
+	ResponseStruct: LoginResponse,
+}
+
+func LoginResolver(params graphql.ResolveParams, session *reflection.Session) (interface{}, error) {
+	isCredentialsValid,_id := TryLogin(params.Args["mail"].(string),params.Args["password"].(string))
+
+	if(isCredentialsValid){
+		token, err := services.NEWJWTService().GenerateToken(_id)
+		if(err!=nil){
+			return nil, err
+		}
+
+		response := bson.M{"token": token}
+
+		return response,nil
+	}
+
+
+
 }
