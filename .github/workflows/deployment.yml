@@ -19,6 +19,18 @@ jobs:
       - name: Get Branch
         run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | tr / -)" >> $GITHUB_ENV
 
+      - name: Configure variables
+        run: |
+          echo "SECRET_CHUNK_NAME=$(echo 'ENVIRONMENT_'${BRANCH_NAME^^})" >> $GITHUB_ENV
+
+      - name: Configure Environment
+        id: package
+        uses: start2play/es-environments-action@main
+        with:
+          action: read
+          chunk: ${{ secrets[env.SECRET_CHUNK_NAME] }}
+          base: ${{ env.SERVICE_NAME }}
+
       - name: Set up Go
         uses: actions/setup-go@v2
         with:

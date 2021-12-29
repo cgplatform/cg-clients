@@ -3,7 +3,7 @@ package main
 import (
 	"es-api/config"
 	"es-api/core"
-	"es-api/core/database"
+	"es-api/database"
 
 	log "github.com/sirupsen/logrus"
 
@@ -37,6 +37,6 @@ func main() {
 	address := config.HTTP.Address + ":" + config.HTTP.Port
 	log.Infoln("Starting server on:", address)
 	if err := http.ListenAndServe(address, nil); err != nil {
-		log.Error(err)
+		log.Errorln(err)
 	}
 }
