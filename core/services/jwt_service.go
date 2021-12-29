@@ -1,10 +1,14 @@
 package services
 
-import "github.com/dgrijalva/jwt-go"
+import (
+	"github.com/dgrijalva/jwt-go"
+	"time"
+	"fmt"
+)
 
 type jwtService struct{
-	secretKey string,
-	isr string,
+	secretKey string
+	isr string
 }
 
 func NewJWTService() *jwtService{
@@ -19,14 +23,14 @@ type Claim struct{
 	jwt.StandardClaims
 }
 
-func (s *jwtService) GenerateToken(id uint)(string, error){
+func (s *jwtService) GenerateToken(id string)(string, error){
 	claim := &Claim{
 		id,
 		jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Hour * 2).Unix(),
 			Issuer: s.isr,
 			IssuedAt: time.Now().Unix(),
-		}
+		},
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
@@ -40,7 +44,7 @@ func (s *jwtService) GenerateToken(id uint)(string, error){
 }
 
 func (s *jwtService) ValidateToken(token string) bool{
-	_, err := jwt.Parse(token, func(t, jwt.Token)(interface{},error){
+	_, err := jwt.Parse(token, func(t *jwt.Token)(interface{},error){
 		if _, isValid := t.Method.(*jwt.SigningMethodHMAC); !isValid{
 			return nil, fmt.Errorf("invalid token")
 		}

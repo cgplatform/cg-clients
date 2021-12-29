@@ -32,7 +32,7 @@ func HttpInterceptor(pointers *Pointers, responseWriter http.ResponseWriter, req
 		VariableValues: p.Variables,
 		OperationName:  p.Operation,
 		RootObject: map[string]interface{}{
-			"fields": fields
+			"fields": fields,
 		},
 	})
 
