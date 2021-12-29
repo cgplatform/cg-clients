@@ -2,7 +2,7 @@ package user
 
 import (
 	"context"
-	"es-api/core/database"
+	"es-api/database"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"

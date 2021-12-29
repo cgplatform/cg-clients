@@ -3,7 +3,6 @@ package database
 import (
 	"context"
 	"fmt"
-	"net/url"
 	"time"
 
 	"es-api/config"
@@ -18,28 +17,21 @@ var (
 )
 
 func Connect() error {
-
 	uri := fmt.Sprintf("mongodb+srv://%s:%s@%s",
-		url.QueryEscape(config.Mongo.User),
-		url.QueryEscape(config.Mongo.Password),
-		url.QueryEscape(config.Mongo.Host))
+		config.Mongo.User,
+		config.Mongo.Password,
+		config.Mongo.Host)
 
-	log.Infoln("Connecting to MongoDB", "[", config.Mongo.Host, "]")
+	clientOptions := options.Client().ApplyURI(uri)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 
-	if client, err := mongo.NewClient(options.Client().ApplyURI(uri)); err != nil {
-		log.Fatalln("[MongoDB]: Could not connect -", err)
-		return err
-	} else {
-		mongoClient = client
-	}
-
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-
-	if err := mongoClient.Connect(ctx); err != nil {
+	if client, err := mongo.Connect(ctx, clientOptions); err != nil {
 		log.Fatalln("[MongoDB]: Could not connect -", err)
 		return err
 	} else {
 		log.Infoln("[MongoDB]: Connection to MongoDB was a success")
+		mongoClient = client
 	}
 
 	return nil
