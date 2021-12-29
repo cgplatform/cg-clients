@@ -2,7 +2,7 @@ FROM ubuntu:latest
 
 WORKDIR dist
 
-COPY .env es-api /dist
+COPY .env es-api ./
 
 CMD chmod +x es-api
 
