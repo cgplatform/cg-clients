@@ -1,9 +1,9 @@
 package core
 
 import (
-	"es-api/core/reflection"
-	"es-api/schemas/user"
 	"net/http"
+	"s2p-api/core/reflection"
+	"s2p-api/schemas/user"
 )
 
 type FieldsPointersMap map[string]*reflection.RootField

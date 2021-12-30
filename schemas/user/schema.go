@@ -1,7 +1,7 @@
 package user
 
 import (
-	"es-api/core/reflection"
+	"s2p-api/core/reflection"
 )
 
 var Schema = reflection.InternalSchema{

@@ -2,7 +2,8 @@ package user
 
 import (
 	"context"
-	"es-api/database"
+	"s2p-api/database"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -107,25 +108,25 @@ func FilterFrom(args map[string]interface{}) bson.M {
 	return result
 }
 
-func TryLogin(email string, password string) (bool, string){
+func TryLogin(email string, password string) (bool, string) {
 
 	collection := database.GetCollection("users")
 
 	filter := bson.M{"email": email}
 
 	var result bson.M
-	err := collection.FindOne(ctx,filter).Decode(&result)
+	err := collection.FindOne(ctx, filter).Decode(&result)
 
-	if(err!=nil){
+	if err != nil {
 		return false, ""
 	}
 
-	id:=result["_id"].(primitive.ObjectID).Hex()
+	id := result["_id"].(primitive.ObjectID).Hex()
 
-	if(result["password"].(string)==password){
+	if result["password"].(string) == password {
 		return true, id
 	}
 
-	return false,""
+	return false, ""
 
 }

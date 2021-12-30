@@ -1,9 +1,9 @@
 package main
 
 import (
-	"es-api/config"
-	"es-api/core"
-	"es-api/database"
+	"s2p-api/config"
+	"s2p-api/core"
+	"s2p-api/database"
 
 	log "github.com/sirupsen/logrus"
 

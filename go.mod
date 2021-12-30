@@ -1,4 +1,4 @@
-module es-api
+module s2p-api
 
 go 1.16
 

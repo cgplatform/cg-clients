@@ -1,9 +1,9 @@
 package user
 
 import (
-	"es-api/core/reflection"
-	"es-api/core/services"
 	"fmt"
+	"s2p-api/core/reflection"
+	"s2p-api/core/services"
 
 	"github.com/graphql-go/graphql"
 	"go.mongodb.org/mongo-driver/bson"
