@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"es-api/config"
+	"s2p-api/config"
 
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
