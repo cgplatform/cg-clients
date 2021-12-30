@@ -2,9 +2,7 @@ package user
 
 import (
 	"context"
-	"fmt"
 	"es-api/database"
-
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -61,8 +59,8 @@ func Update(user *User) (*User, error) {
 		document["name"] = user.Name
 	}
 
-	if user.Mail != "" {
-		document["mail"] = user.Mail
+	if user.Email != "" {
+		document["email"] = user.Email
 	}
 
 	if user.Phone != "" {
@@ -117,12 +115,16 @@ func TryLogin(email string, password string) (bool, string){
 
 	var result bson.M
 	err := collection.FindOne(ctx,filter).Decode(&result)
-	
+
 	if(err!=nil){
 		return false, ""
 	}
 
-	fmt.Println(result)
+	id:=result["_id"].(primitive.ObjectID).Hex()
+
+	if(result["password"].(string)==password){
+		return true, id
+	}
 
 	return false,""
 

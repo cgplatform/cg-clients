@@ -2,6 +2,7 @@ package core
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/graphql-go/graphql"
@@ -23,7 +24,6 @@ func HttpInterceptor(pointers *Pointers, responseWriter http.ResponseWriter, req
 		responseWriter.WriteHeader(400)
 		return
 	}
-	
 
 	result := graphql.Do(graphql.Params{
 		Context:        request.Context(),
@@ -43,9 +43,10 @@ func HttpInterceptor(pointers *Pointers, responseWriter http.ResponseWriter, req
 
 func ExecutionInterceptor(params graphql.ResolveParams) (interface{}, error) {
 	rootObject := params.Info.RootValue.(map[string]interface{})
-
 	fields := rootObject["fields"].(FieldsPointersMap)
 	field := fields[params.Info.FieldName]
+	fmt.Printf("params.Info.FieldName: %v\n", params.Info.FieldName)
+	fmt.Printf("field: %v\n", field)
 
 	return field.Resolve(params, nil)
 }

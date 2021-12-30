@@ -1,9 +1,10 @@
 package user
 
 import (
-	"fmt"
 	"es-api/core/reflection"
 	"es-api/core/services"
+	"fmt"
+
 	"github.com/graphql-go/graphql"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -38,22 +39,26 @@ var Login = &reflection.RootField{
 	Resolve:        LoginResolver,
 	RequestStruct:  LoginRequestInstance,
 	ResponseStruct: LoginResponseInstance,
+	RequiredRequestFields: []string{
+		"email",
+		"password",
+	},
 }
 
 func LoginResolver(params graphql.ResolveParams, session *reflection.Session) (interface{}, error) {
-	isCredentialsValid,_id := TryLogin(params.Args["mail"].(string),params.Args["password"].(string))
 
-	if(isCredentialsValid){
+	isCredentialsValid, _id := TryLogin(params.Args["email"].(string), params.Args["password"].(string))
+
+	if isCredentialsValid {
 		token, err := services.NewJWTService().GenerateToken(_id)
-		if(err!=nil){
+		if err != nil {
 			return nil, err
 		}
 
 		response := bson.M{"token": token}
 
-		return response,nil
+		return response, nil
 	}
 
-	return nil,fmt.Errorf("Email or Password invalid")
-
+	return nil, fmt.Errorf("Email or Password invalid")
 }

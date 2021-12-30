@@ -56,7 +56,6 @@ func Initialize() error {
 		registerFieldsPointers(key, schema.Mutations)
 
 		schema.GQLSchema = gqlSchema
-
 		registerEndpoint(key)
 	}
 

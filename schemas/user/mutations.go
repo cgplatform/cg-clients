@@ -13,7 +13,7 @@ var CreateField = &reflection.RootField{
 	ResponseStruct: UserInstance,
 	RequiredRequestFields: []string{
 		"name",
-		"mail",
+		"email",
 		"phone",
 		"password",
 		"birthdate",
@@ -29,7 +29,7 @@ var CreateField = &reflection.RootField{
 func CreateResolver(params graphql.ResolveParams, session *reflection.Session) (interface{}, error) {
 	user := &User{
 		Name:      params.Args["name"].(string),
-		Mail:      params.Args["mail"].(string),
+		Email:     params.Args["email"].(string),
 		Phone:     params.Args["phone"].(string),
 		Password:  params.Args["password"].(string),
 		Birthdate: params.Args["birthdate"].(string),
@@ -69,8 +69,8 @@ func UpdateResolver(params graphql.ResolveParams, session *reflection.Session) (
 		user.Name = value.(string)
 	}
 
-	if value, ok := params.Args["mail"]; ok {
-		user.Mail = value.(string)
+	if value, ok := params.Args["email"]; ok {
+		user.Email = value.(string)
 	}
 
 	if value, ok := params.Args["phone"]; ok {
