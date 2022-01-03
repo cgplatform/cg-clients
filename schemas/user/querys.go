@@ -5,7 +5,6 @@ import (
 	"s2p-api/core/reflection"
 	"s2p-api/core/services"
 
-	"github.com/graphql-go/graphql"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -23,10 +22,11 @@ var FilterByField = &reflection.RootField{
 	},
 }
 
-func FindByResolver(params graphql.ResolveParams, session *reflection.Session) (interface{}, error) {
-	filter := FilterFrom(params.Args)
+func FindByResolver(request interface{}, session *reflection.Session) (interface{}, error) {
 
-	if users, err := Read(filter); err != nil {
+	user := request.(User)
+
+	if users, err := Read(user); err != nil {
 		return nil, err
 	} else {
 		return users, nil
@@ -45,9 +45,11 @@ var Login = &reflection.RootField{
 	},
 }
 
-func LoginResolver(params graphql.ResolveParams, session *reflection.Session) (interface{}, error) {
+func LoginResolver(request interface{}, session *reflection.Session) (interface{}, error) {
 
-	isCredentialsValid, _id := TryLogin(params.Args["email"].(string), params.Args["password"].(string))
+	login := request.(LoginRequest)
+
+	isCredentialsValid, _id := TryLogin(login)
 
 	if isCredentialsValid {
 		token, err := services.NewJWTService().GenerateToken(_id)

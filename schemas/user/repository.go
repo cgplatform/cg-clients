@@ -2,8 +2,10 @@ package user
 
 import (
 	"context"
+	"fmt"
 	"s2p-api/database"
 
+	"github.com/naamancurtis/mongo-go-struct-to-bson/mapper"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -15,7 +17,6 @@ var (
 
 func Create(user *User) (*User, error) {
 	collection := database.GetCollection("users")
-
 	if result, err := collection.InsertOne(ctx, user); err != nil {
 		return nil, err
 	} else {
@@ -25,9 +26,11 @@ func Create(user *User) (*User, error) {
 	return user, nil
 }
 
-func Read(filter bson.M) ([]User, error) {
+func Read(user User) ([]User, error) {
 	collection := database.GetCollection("users")
-
+	fmt.Printf("user: %v\n", user)
+	filter := mapper.ConvertStructToBSONMap(user, &mapper.MappingOpts{GenerateFilterOrPatch: true})
+	fmt.Printf("filter: %v\n", filter)
 	var users []User
 
 	if cursor, err := collection.Find(ctx, filter); err != nil {
@@ -108,11 +111,11 @@ func FilterFrom(args map[string]interface{}) bson.M {
 	return result
 }
 
-func TryLogin(email string, password string) (bool, string) {
+func TryLogin(login LoginRequest) (bool, string) {
 
 	collection := database.GetCollection("users")
 
-	filter := bson.M{"email": email}
+	filter := bson.M{"email": login.Email}
 
 	var result bson.M
 	err := collection.FindOne(ctx, filter).Decode(&result)
@@ -123,7 +126,7 @@ func TryLogin(email string, password string) (bool, string) {
 
 	id := result["_id"].(primitive.ObjectID).Hex()
 
-	if result["password"].(string) == password {
+	if result["password"].(string) == login.Password {
 		return true, id
 	}
 

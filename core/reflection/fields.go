@@ -6,7 +6,7 @@ import (
 
 type Session struct{}
 
-type Resolve func(params graphql.ResolveParams, session *Session) (interface{}, error)
+type Resolve func(request interface{}, session *Session) (interface{}, error)
 
 type RootField struct {
 	List                   bool

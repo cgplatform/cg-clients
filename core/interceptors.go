@@ -2,10 +2,12 @@ package core
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
+	"reflect"
+	"s2p-api/core/services"
 
 	"github.com/graphql-go/graphql"
+	"github.com/mitchellh/mapstructure"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -18,11 +20,16 @@ type post struct {
 func HttpInterceptor(pointers *Pointers, responseWriter http.ResponseWriter, request *http.Request) {
 	schema := pointers.Schema
 	fields := pointers.Fields
-
 	var p post
 	if err := json.NewDecoder(request.Body).Decode(&p); err != nil {
 		responseWriter.WriteHeader(400)
 		return
+	}
+
+	if token := request.Header["Token"]; token != nil {
+		if valid, _ := services.NewJWTService().ValidateToken(token[0]); valid {
+
+		}
 	}
 
 	result := graphql.Do(graphql.Params{
@@ -45,8 +52,9 @@ func ExecutionInterceptor(params graphql.ResolveParams) (interface{}, error) {
 	rootObject := params.Info.RootValue.(map[string]interface{})
 	fields := rootObject["fields"].(FieldsPointersMap)
 	field := fields[params.Info.FieldName]
-	fmt.Printf("params.Info.FieldName: %v\n", params.Info.FieldName)
-	fmt.Printf("field: %v\n", field)
 
-	return field.Resolve(params, nil)
+	instance := reflect.New(reflect.TypeOf(field.RequestStruct)).Elem().Interface()
+	mapstructure.Decode(params.Args, &instance)
+
+	return field.Resolve(instance, nil)
 }

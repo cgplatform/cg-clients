@@ -1,8 +1,6 @@
 package reflection
 
 import (
-	"fmt"
-
 	"github.com/graphql-go/graphql"
 )
 
@@ -21,7 +19,6 @@ func setArg(key string, structField StructField, gqlArgs graphql.FieldConfigArgu
 func reflectArgs(rootField *RootField) (graphql.FieldConfigArgument, error) {
 	args := graphql.FieldConfigArgument{}
 	_, reflectedFields := reflectStruct(rootField.RequestStruct)
-	fmt.Printf("reflectedFields: %v\n", reflectedFields)
 	rootField.ReflectedRequestFields = reflectedFields
 
 	for key := range reflectedFields {

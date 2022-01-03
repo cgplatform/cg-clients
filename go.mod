@@ -8,6 +8,8 @@ require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/graphql-go/graphql v0.8.0 // indirect
 	github.com/joho/godotenv v1.4.0 // indirect
+	github.com/mitchellh/mapstructure v1.4.3 // indirect
+	github.com/naamancurtis/mongo-go-struct-to-bson v0.1.0 // indirect
 	github.com/sirupsen/logrus v1.8.1
 	go.mongodb.org/mongo-driver v1.8.0
 )
