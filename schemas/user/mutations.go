@@ -9,7 +9,7 @@ import (
 
 var CreateField = &reflection.RootField{
 	Name:           "create",
-	Resolve:        CreateResolver,
+	Resolver:       CreateResolver,
 	RequestStruct:  UserInstance,
 	ResponseStruct: UserInstance,
 	RequiredRequestFields: []string{
@@ -39,7 +39,7 @@ func CreateResolver(request interface{}, session jwt.MapClaims) (interface{}, er
 
 var UpdateField = &reflection.RootField{
 	Name:           "updateBy",
-	Resolve:        UpdateResolver,
+	Resolver:       UpdateResolver,
 	RequestStruct:  UserInstance,
 	ResponseStruct: UserInstance,
 	DenyRequestFields: []string{
@@ -60,7 +60,7 @@ func UpdateResolver(request interface{}, session jwt.MapClaims) (interface{}, er
 
 	user.ID = session["Sum"].(string)
 
-	if value, err := Update(&user); err != nil {
+	if value, err := UpdateByUser(&user); err != nil {
 		return nil, err
 	} else {
 		return value, nil

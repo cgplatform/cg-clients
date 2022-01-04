@@ -49,9 +49,7 @@ func Read(user User) ([]User, error) {
 	return users, nil
 }
 
-func Update(user *User) (*User, error) {
-	collection := database.GetCollection("users")
-
+func UpdateByUser(user *User) (*User, error) {
 	objectID, _ := primitive.ObjectIDFromHex(user.ID)
 
 	filter := bson.M{"_id": objectID}
@@ -77,6 +75,28 @@ func Update(user *User) (*User, error) {
 	update := bson.M{
 		"$set": document,
 	}
+
+	return Update(filter, update)
+}
+
+func UpdateTokenByAlias(alias string, user *User, token string) (*User, error) {
+	documentSet := bson.M{}
+
+	objectID, _ := primitive.ObjectIDFromHex(user.ID)
+
+	filter := bson.M{"_id": objectID}
+
+	documentSet["tokens."+alias] = token
+
+	update := bson.M{
+		"$set": documentSet,
+	}
+
+	return Update(filter, update)
+}
+
+func Update(filter bson.M, update bson.M) (*User, error) {
+	collection := database.GetCollection("users")
 
 	var updated *User
 

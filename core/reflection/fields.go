@@ -14,7 +14,7 @@ type Interceptor func(request interface{}, session jwt.MapClaims) (bool, error)
 type RootField struct {
 	List                   bool
 	Name                   string
-	Resolve                Resolve
+	Resolver               Resolver
 	RequestStruct          interface{}
 	ResponseStruct         interface{}
 	RequiredRequestFields  []string

@@ -43,8 +43,11 @@ func (s *jwtService) GenerateToken(id string, duration time.Duration) (string, e
 	return t, nil
 }
 
-func (s *jwtService) ValidateToken(token string) jwt.MapClaims {
+func (s *jwtService) GenerateTokenDefault(id string) (string, error) {
+	return s.GenerateToken(id, time.Hour*12)
+}
 
+func (s *jwtService) ValidateToken(token string) jwt.MapClaims {
 	keyFunction := func(t *jwt.Token) (interface{}, error) {
 		if _, isValid := t.Method.(*jwt.SigningMethodHMAC); !isValid {
 			return nil, fmt.Errorf("invalid token")

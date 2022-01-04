@@ -9,6 +9,7 @@ var Schema = reflection.InternalSchema{
 	Querys: []*reflection.RootField{
 		FilterByField,
 		Login,
+		Recovery,
 	},
 	Mutations: []*reflection.RootField{
 		CreateField,
