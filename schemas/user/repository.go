@@ -2,7 +2,6 @@ package user
 
 import (
 	"context"
-	"fmt"
 	"s2p-api/database"
 
 	"github.com/naamancurtis/mongo-go-struct-to-bson/mapper"
@@ -28,9 +27,9 @@ func Create(user *User) (*User, error) {
 
 func Read(user User) ([]User, error) {
 	collection := database.GetCollection("users")
-	fmt.Printf("user: %v\n", user)
+
 	filter := mapper.ConvertStructToBSONMap(user, &mapper.MappingOpts{GenerateFilterOrPatch: true})
-	fmt.Printf("filter: %v\n", filter)
+
 	var users []User
 
 	if cursor, err := collection.Find(ctx, filter); err != nil {
@@ -95,21 +94,11 @@ func Update(user *User) (*User, error) {
 	return updated, nil
 }
 
-func FilterFrom(args map[string]interface{}) bson.M {
-	result := make(bson.M, len(args))
+// func Delete(user User){
+// 	collection := database.GetCollection("users")
+// 	objectID, _ := primitive.ObjectIDFromHex(user.ID)
 
-	for k, v := range args {
-
-		if k == "id" {
-			k = "_id"
-			v, _ = primitive.ObjectIDFromHex(v.(string))
-		}
-
-		result[k] = v
-	}
-
-	return result
-}
+// }
 
 func TryLogin(login LoginRequest) (bool, string) {
 

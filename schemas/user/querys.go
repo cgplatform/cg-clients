@@ -2,9 +2,12 @@ package user
 
 import (
 	"fmt"
+	"s2p-api/core/interceptors"
 	"s2p-api/core/reflection"
 	"s2p-api/core/services"
+	"time"
 
+	"github.com/dgrijalva/jwt-go"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -14,6 +17,9 @@ var FilterByField = &reflection.RootField{
 	Resolve:        FindByResolver,
 	RequestStruct:  UserInstance,
 	ResponseStruct: UserInstance,
+	Interceptors: []reflection.Interceptor{
+		interceptors.IsLoggedIn,
+	},
 	DenyRequestFields: []string{
 		"password",
 	},
@@ -22,7 +28,11 @@ var FilterByField = &reflection.RootField{
 	},
 }
 
-func FindByResolver(request interface{}, session *reflection.Session) (interface{}, error) {
+func FindByResolver(request interface{}, session jwt.MapClaims) (interface{}, error) {
+
+	if session == nil {
+		return nil, fmt.Errorf("not authorized")
+	}
 
 	user := request.(User)
 
@@ -45,18 +55,17 @@ var Login = &reflection.RootField{
 	},
 }
 
-func LoginResolver(request interface{}, session *reflection.Session) (interface{}, error) {
+func LoginResolver(request interface{}, session jwt.MapClaims) (interface{}, error) {
 
 	login := request.(LoginRequest)
 
 	isCredentialsValid, _id := TryLogin(login)
 
 	if isCredentialsValid {
-		token, err := services.NewJWTService().GenerateToken(_id)
+		token, err := services.NewJWTService().GenerateToken(_id, time.Minute*1)
 		if err != nil {
 			return nil, err
 		}
-
 		response := bson.M{"token": token}
 
 		return response, nil

@@ -24,11 +24,11 @@ type Claim struct {
 	jwt.StandardClaims
 }
 
-func (s *jwtService) GenerateToken(id string) (string, error) {
+func (s *jwtService) GenerateToken(id string, duration time.Duration) (string, error) {
 	claim := &Claim{
 		id,
 		jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Hour * 2).Unix(),
+			ExpiresAt: time.Now().Add(duration).Unix(),
 			Issuer:    s.isr,
 			IssuedAt:  time.Now().Unix(),
 		},
@@ -43,18 +43,21 @@ func (s *jwtService) GenerateToken(id string) (string, error) {
 	return t, nil
 }
 
-func (s *jwtService) ValidateToken(token string) (bool, string) {
-	tk, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
+func (s *jwtService) ValidateToken(token string) jwt.MapClaims {
+
+	keyFunction := func(t *jwt.Token) (interface{}, error) {
 		if _, isValid := t.Method.(*jwt.SigningMethodHMAC); !isValid {
 			return nil, fmt.Errorf("invalid token")
 		}
 		return []byte(s.secretKey), nil
-	})
-
-	if err == nil {
-		return false, ""
 	}
-	id := tk.Claims.(jwt.MapClaims)["Sum"].(string)
 
-	return true, id
+	tk, err := jwt.Parse(token, keyFunction)
+
+	if err != nil {
+		return nil
+	}
+	claims := tk.Claims.(jwt.MapClaims)
+
+	return claims
 }

@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"s2p-api/core/services"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/graphql-go/graphql"
 	"github.com/mitchellh/mapstructure"
 	log "github.com/sirupsen/logrus"
@@ -26,13 +27,13 @@ func HttpInterceptor(pointers *Pointers, responseWriter http.ResponseWriter, req
 		return
 	}
 
+	var claims jwt.MapClaims
 	if token := request.Header["Token"]; token != nil {
-		if valid, _ := services.NewJWTService().ValidateToken(token[0]); valid {
-
-		}
+		claims = services.NewJWTService().ValidateToken(token[0])
 	}
 
 	result := graphql.Do(graphql.Params{
+
 		Context:        request.Context(),
 		Schema:         *schema.GQLSchema,
 		RequestString:  p.Query,
@@ -40,6 +41,7 @@ func HttpInterceptor(pointers *Pointers, responseWriter http.ResponseWriter, req
 		OperationName:  p.Operation,
 		RootObject: map[string]interface{}{
 			"fields": fields,
+			"claims": claims,
 		},
 	})
 
@@ -53,8 +55,17 @@ func ExecutionInterceptor(params graphql.ResolveParams) (interface{}, error) {
 	fields := rootObject["fields"].(FieldsPointersMap)
 	field := fields[params.Info.FieldName]
 
+	session := rootObject["claims"].(jwt.MapClaims)
+
 	instance := reflect.New(reflect.TypeOf(field.RequestStruct)).Elem().Interface()
 	mapstructure.Decode(params.Args, &instance)
 
-	return field.Resolve(instance, nil)
+	for _, interceptor := range field.Interceptors {
+
+		if ok, err := interceptor(instance, session); err != nil {
+			return ok, err
+		}
+
+	}
+	return field.Resolve(instance, session)
 }
