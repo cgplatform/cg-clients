@@ -1,9 +1,11 @@
 package user
 
 import (
+	"errors"
 	"fmt"
 	"s2p-api/core/reflection"
 	"s2p-api/core/services"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -11,7 +13,7 @@ import (
 var FilterByField = &reflection.RootField{
 	List:           true,
 	Name:           "filterBy",
-	Resolve:        FindByResolver,
+	Resolver:       FindByResolver,
 	RequestStruct:  UserInstance,
 	ResponseStruct: UserInstance,
 	DenyRequestFields: []string{
@@ -36,7 +38,7 @@ func FindByResolver(request interface{}, session *reflection.Session) (interface
 var Login = &reflection.RootField{
 	List:           false,
 	Name:           "login",
-	Resolve:        LoginResolver,
+	Resolver:       LoginResolver,
 	RequestStruct:  LoginRequestInstance,
 	ResponseStruct: LoginResponseInstance,
 	RequiredRequestFields: []string{
@@ -52,7 +54,7 @@ func LoginResolver(request interface{}, session *reflection.Session) (interface{
 	isCredentialsValid, _id := TryLogin(login)
 
 	if isCredentialsValid {
-		token, err := services.NewJWTService().GenerateToken(_id)
+		token, err := services.NewJWTService().GenerateTokenDefault(_id)
 		if err != nil {
 			return nil, err
 		}
@@ -63,4 +65,59 @@ func LoginResolver(request interface{}, session *reflection.Session) (interface{
 	}
 
 	return nil, fmt.Errorf("Email or Password invalid")
+}
+
+var Recovery = &reflection.RootField{
+	List:           false,
+	Name:           "recovery",
+	Resolver:       RecoveryResolver,
+	RequestStruct:  UserInstance,
+	ResponseStruct: UserInstance,
+	RequiredRequestFields: []string{
+		"email",
+	},
+	DenyRequestFields: []string{
+		"password",
+		"id",
+		"name",
+		"phone",
+		"birthdate",
+	},
+	DenyResponseFields: []string{
+		"password",
+		"id",
+		"name",
+		"phone",
+		"birthdate",
+	},
+}
+
+func RecoveryResolver(request interface{}, session *reflection.Session) (interface{}, error) {
+
+	user := request.(User)
+
+	users, err := Read(user)
+
+	if err != nil {
+		return nil, err
+	}
+	if len(users) == 0 {
+		return nil, errors.New("user_not_exists")
+	}
+
+	user = users[0]
+
+	token, err := services.NewJWTService().GenerateToken(user.ID, time.Hour*24)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if _, err := UpdateTokenByAlias("recovery", &user, token); err != nil {
+		return nil, err
+	}
+
+	fmt.Printf("user: %v\n", token)
+
+	return user, nil
 }

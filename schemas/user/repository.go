@@ -2,7 +2,6 @@ package user
 
 import (
 	"context"
-	"fmt"
 	"s2p-api/database"
 
 	"github.com/naamancurtis/mongo-go-struct-to-bson/mapper"
@@ -28,9 +27,7 @@ func Create(user *User) (*User, error) {
 
 func Read(user User) ([]User, error) {
 	collection := database.GetCollection("users")
-	fmt.Printf("user: %v\n", user)
 	filter := mapper.ConvertStructToBSONMap(user, &mapper.MappingOpts{GenerateFilterOrPatch: true})
-	fmt.Printf("filter: %v\n", filter)
 	var users []User
 
 	if cursor, err := collection.Find(ctx, filter); err != nil {
@@ -50,9 +47,7 @@ func Read(user User) ([]User, error) {
 	return users, nil
 }
 
-func Update(user *User) (*User, error) {
-	collection := database.GetCollection("users")
-
+func UpdateByUser(user *User) (*User, error) {
 	objectID, _ := primitive.ObjectIDFromHex(user.ID)
 
 	filter := bson.M{"_id": objectID}
@@ -78,6 +73,28 @@ func Update(user *User) (*User, error) {
 	update := bson.M{
 		"$set": document,
 	}
+
+	return Update(filter, update)
+}
+
+func UpdateTokenByAlias(alias string, user *User, token string) (*User, error) {
+	documentSet := bson.M{}
+
+	objectID, _ := primitive.ObjectIDFromHex(user.ID)
+
+	filter := bson.M{"_id": objectID}
+
+	documentSet["tokens."+alias] = token
+
+	update := bson.M{
+		"$set": documentSet,
+	}
+
+	return Update(filter, update)
+}
+
+func Update(filter bson.M, update bson.M) (*User, error) {
+	collection := database.GetCollection("users")
 
 	var updated *User
 

@@ -6,12 +6,12 @@ import (
 
 type Session struct{}
 
-type Resolve func(request interface{}, session *Session) (interface{}, error)
+type Resolver func(request interface{}, session *Session) (interface{}, error)
 
 type RootField struct {
 	List                   bool
 	Name                   string
-	Resolve                Resolve
+	Resolver               Resolver
 	RequestStruct          interface{}
 	ResponseStruct         interface{}
 	RequiredRequestFields  []string

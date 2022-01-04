@@ -56,5 +56,5 @@ func ExecutionInterceptor(params graphql.ResolveParams) (interface{}, error) {
 	instance := reflect.New(reflect.TypeOf(field.RequestStruct)).Elem().Interface()
 	mapstructure.Decode(params.Args, &instance)
 
-	return field.Resolve(instance, nil)
+	return field.Resolver(instance, nil)
 }

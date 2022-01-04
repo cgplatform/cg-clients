@@ -24,11 +24,11 @@ type Claim struct {
 	jwt.StandardClaims
 }
 
-func (s *jwtService) GenerateToken(id string) (string, error) {
+func (s *jwtService) GenerateToken(id string, duration time.Duration) (string, error) {
 	claim := &Claim{
 		id,
 		jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Hour * 2).Unix(),
+			ExpiresAt: time.Now().Add(duration).Unix(),
 			Issuer:    s.isr,
 			IssuedAt:  time.Now().Unix(),
 		},
@@ -41,6 +41,11 @@ func (s *jwtService) GenerateToken(id string) (string, error) {
 	}
 
 	return t, nil
+}
+
+func (s *jwtService) GenerateTokenDefault(id string) (string, error) {
+
+	return s.GenerateToken(id, time.Hour*12)
 }
 
 func (s *jwtService) ValidateToken(token string) (bool, string) {

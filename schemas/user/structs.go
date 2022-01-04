@@ -23,3 +23,9 @@ type LoginResponse struct {
 }
 
 var LoginResponseInstance = LoginResponse{}
+
+type MessageResponse struct {
+	Message string `bson:"message"`
+}
+
+var MessageResponseInstance = MessageResponse{}
