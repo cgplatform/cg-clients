@@ -14,5 +14,6 @@ var Schema = reflection.InternalSchema{
 	Mutations: []*reflection.RootField{
 		CreateField,
 		UpdateField,
+		DeleteField,
 	},
 }

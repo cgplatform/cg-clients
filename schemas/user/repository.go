@@ -49,6 +49,22 @@ func Read(user User) ([]User, error) {
 	return users, nil
 }
 
+func FindById(id string) (*User, error) {
+	collection := database.GetCollection("users")
+
+	objectID, _ := primitive.ObjectIDFromHex(id)
+
+	filter := bson.M{"_id": objectID}
+
+	var user *User
+
+	if err := collection.FindOne(ctx, filter).Decode(&user); err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
 func UpdateByUser(user *User) (*User, error) {
 	objectID, _ := primitive.ObjectIDFromHex(user.ID)
 
@@ -114,11 +130,20 @@ func Update(filter bson.M, update bson.M) (*User, error) {
 	return updated, nil
 }
 
-// func Delete(user User){
-// 	collection := database.GetCollection("users")
-// 	objectID, _ := primitive.ObjectIDFromHex(user.ID)
+func Delete(user *User) (*DeleteResponse, error) {
+	collection := database.GetCollection("users")
+	objectID, _ := primitive.ObjectIDFromHex(user.ID)
 
-// }
+	filter := bson.M{"_id": objectID}
+
+	if result, err := collection.DeleteOne(ctx, filter); err != nil {
+		return nil, err
+	} else {
+		response := &DeleteResponse{ID: user.ID, DeletedCount: result.DeletedCount}
+		return response, nil
+	}
+
+}
 
 func TryLogin(login LoginRequest) (bool, string) {
 

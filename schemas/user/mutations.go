@@ -1,8 +1,10 @@
 package user
 
 import (
-	"fmt"
+	"errors"
+	"s2p-api/core/interceptors"
 	"s2p-api/core/reflection"
+	"s2p-api/core/services"
 
 	"github.com/dgrijalva/jwt-go"
 )
@@ -29,6 +31,18 @@ var CreateField = &reflection.RootField{
 
 func CreateResolver(request interface{}, session jwt.MapClaims) (interface{}, error) {
 	user := request.(User)
+	user.Password = services.SHA256Encoder(user.Password)
+
+	userEmail := &User{
+		Email: user.Email,
+	}
+	result, err := Read(*userEmail)
+	if err != nil {
+		return nil, err
+	}
+	if len(result) != 0 {
+		return nil, errors.New("email already exists")
+	}
 
 	if user, err := Create(&user); err != nil {
 		return nil, err
@@ -42,6 +56,9 @@ var UpdateField = &reflection.RootField{
 	Resolver:       UpdateResolver,
 	RequestStruct:  UserInstance,
 	ResponseStruct: UserInstance,
+	Interceptors: []reflection.Interceptor{
+		interceptors.IsLoggedIn,
+	},
 	DenyRequestFields: []string{
 		"password",
 	},
@@ -51,10 +68,6 @@ var UpdateField = &reflection.RootField{
 }
 
 func UpdateResolver(request interface{}, session jwt.MapClaims) (interface{}, error) {
-
-	if session == nil {
-		return nil, fmt.Errorf("not authorized")
-	}
 
 	user := request.(User)
 
@@ -67,32 +80,37 @@ func UpdateResolver(request interface{}, session jwt.MapClaims) (interface{}, er
 	}
 }
 
-// var DeleteField = &reflection.RootField{
-// 	Name:           "updateBy",
-// 	Resolve:        UpdateResolver,
-// 	RequestStruct:  UserInstance,
-// 	ResponseStruct: UserInstance,
-// 	RequiredRequestFields: []string{
-// 		"password",
-// 	},
-// 	DenyResponseFields: []string{
-// 		"password",
-// 	},
-// }
+var DeleteField = &reflection.RootField{
+	Name:           "delete",
+	Resolver:       DeleteResolver,
+	RequestStruct:  UserInstance,
+	ResponseStruct: DeleteResponseInstance,
+	Interceptors: []reflection.Interceptor{
+		interceptors.IsLoggedIn,
+	},
+	RequiredRequestFields: []string{
+		"password",
+	},
+}
 
-// func DeleteResolver(request interface{}, session jwt.MapClaims) (interface{}, error) {
+func DeleteResolver(request interface{}, session jwt.MapClaims) (interface{}, error) {
 
-// 	if session == nil {
-// 		return nil, fmt.Errorf("not authorized")
-// 	}
+	user := request.(User)
+	user.ID = session["Sum"].(string)
 
-// 	user := request.(User)
+	fullUser, err := FindById(user.ID)
+	if err != nil {
+		return nil, err
+	}
 
-// 	user.ID = session["Sum"].(string)
+	paramPassword := services.SHA256Encoder(user.Password)
+	if paramPassword != fullUser.Password {
+		return nil, errors.New("wrong password")
+	}
 
-// 	if value, err := Delete(&user); err != nil {
-// 		return nil, err
-// 	} else {
-// 		return value, nil
-// 	}
-// }
+	if value, err := Delete(&user); err != nil {
+		return nil, err
+	} else {
+		return value, nil
+	}
+}

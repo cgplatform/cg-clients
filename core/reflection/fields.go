@@ -7,7 +7,7 @@ import (
 
 type Session struct{}
 
-type Resolve func(request interface{}, session jwt.MapClaims) (interface{}, error)
+type Resolver func(request interface{}, session jwt.MapClaims) (interface{}, error)
 
 type Interceptor func(request interface{}, session jwt.MapClaims) (bool, error)
 

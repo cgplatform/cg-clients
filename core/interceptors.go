@@ -67,5 +67,5 @@ func ExecutionInterceptor(params graphql.ResolveParams) (interface{}, error) {
 		}
 
 	}
-	return field.Resolve(instance, session)
+	return field.Resolver(instance, session)
 }

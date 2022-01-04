@@ -59,7 +59,7 @@ var Login = &reflection.RootField{
 func LoginResolver(request interface{}, session jwt.MapClaims) (interface{}, error) {
 
 	login := request.(LoginRequest)
-
+	login.Password = services.SHA256Encoder(login.Password)
 	isCredentialsValid, _id := TryLogin(login)
 
 	if isCredentialsValid {
@@ -100,7 +100,7 @@ var Recovery = &reflection.RootField{
 	},
 }
 
-func RecoveryResolver(request interface{}, session *reflection.Session) (interface{}, error) {
+func RecoveryResolver(request interface{}, session jwt.MapClaims) (interface{}, error) {
 
 	user := request.(User)
 

@@ -29,3 +29,10 @@ type MessageResponse struct {
 }
 
 var MessageResponseInstance = MessageResponse{}
+
+type DeleteResponse struct {
+	DeletedCount int64  `bson:"deletedCount"`
+	ID           string `bson:"id"`
+}
+
+var DeleteResponseInstance = DeleteResponse{}
