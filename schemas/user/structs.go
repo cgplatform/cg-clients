@@ -24,15 +24,16 @@ type LoginResponse struct {
 
 var LoginResponseInstance = LoginResponse{}
 
-type MessageResponse struct {
-	Message string `bson:"message"`
-}
-
-var MessageResponseInstance = MessageResponse{}
-
 type DeleteResponse struct {
 	DeletedCount int64  `bson:"deletedCount"`
 	ID           string `bson:"id"`
 }
 
 var DeleteResponseInstance = DeleteResponse{}
+
+type ResetPasswordRequest struct {
+	Password string `bson:"password"`
+	Token    string `bson:"token"`
+}
+
+var ResetPasswordInstance = ResetPasswordRequest{}

@@ -10,6 +10,7 @@ var Schema = reflection.InternalSchema{
 		FilterByField,
 		Login,
 		Recovery,
+		ResetPassword,
 	},
 	Mutations: []*reflection.RootField{
 		CreateField,

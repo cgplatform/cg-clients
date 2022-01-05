@@ -65,31 +65,31 @@ func FindById(id string) (*User, error) {
 	return user, nil
 }
 
+func FindUserByTokenAndAlias(alias string, user *User, token string) (*User, error) {
+	collection := database.GetCollection("users")
+
+	objectID, _ := primitive.ObjectIDFromHex(user.ID)
+
+	filter := bson.M{"_id": objectID}
+
+	filter["tokens."+alias] = token
+
+	if err := collection.FindOne(ctx, filter).Decode(&user); err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
 func UpdateByUser(user *User) (*User, error) {
 	objectID, _ := primitive.ObjectIDFromHex(user.ID)
 
 	filter := bson.M{"_id": objectID}
 
-	document := bson.M{}
+	update := mapper.ConvertStructToBSONMap(user, &mapper.MappingOpts{GenerateFilterOrPatch: true, RemoveID: true})
 
-	if user.Name != "" {
-		document["name"] = user.Name
-	}
-
-	if user.Email != "" {
-		document["email"] = user.Email
-	}
-
-	if user.Phone != "" {
-		document["phone"] = user.Phone
-	}
-
-	if user.Birthdate != "" {
-		document["birthdate"] = user.Birthdate
-	}
-
-	update := bson.M{
-		"$set": document,
+	update = bson.M{
+		"$set": update,
 	}
 
 	return Update(filter, update)
@@ -143,6 +143,22 @@ func Delete(user *User) (*DeleteResponse, error) {
 		return response, nil
 	}
 
+}
+
+func DeleteTokenByAlias(alias string, user *User) (*User, error) {
+	documentUnset := bson.M{}
+
+	objectID, _ := primitive.ObjectIDFromHex(user.ID)
+
+	filter := bson.M{"_id": objectID}
+
+	documentUnset["tokens."+alias] = 1
+
+	update := bson.M{
+		"$unset": documentUnset,
+	}
+
+	return Update(filter, update)
 }
 
 func TryLogin(login LoginRequest) (bool, string) {
