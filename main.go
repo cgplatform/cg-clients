@@ -4,6 +4,7 @@ import (
 	"s2p-api/config"
 	"s2p-api/core"
 	"s2p-api/database"
+	"s2p-api/services"
 
 	log "github.com/sirupsen/logrus"
 
@@ -25,6 +26,8 @@ func main() {
 	if err := config.Load(); err != nil {
 		log.Fatalln("[Configuration]: Could not possible to get the configuration variables", err)
 	}
+
+	services.Initialize()
 
 	database.Connect()
 

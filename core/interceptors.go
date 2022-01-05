@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"reflect"
-	"s2p-api/core/services"
+	"s2p-api/services"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/graphql-go/graphql"

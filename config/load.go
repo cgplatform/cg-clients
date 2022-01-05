@@ -14,12 +14,18 @@ type MongoConfig struct {
 
 type HTTPConfig struct {
 	Address string `env:"HTTP_ADDRESS"`
-	Port string `env:"HTTP_PORT"`
+	Port    string `env:"HTTP_PORT"`
+}
+
+type MailConfig struct {
+	Domain string `env:"MAIL_DOMAIN"`
+	Key    string `env:"MAIL_KEY"`
 }
 
 var (
 	Mongo = MongoConfig{}
 	HTTP  = HTTPConfig{}
+	Mail  = MailConfig{}
 )
 
 func Load() error {
@@ -36,6 +42,10 @@ func Load() error {
 	}
 
 	if err := env.Parse(&HTTP, opts); err != nil {
+		return err
+	}
+
+	if err := env.Parse(&Mail, opts); err != nil {
 		return err
 	}
 

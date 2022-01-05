@@ -2,9 +2,10 @@ package user
 
 import (
 	"errors"
-	"s2p-api/core/interceptors"
+
 	"s2p-api/core/reflection"
-	"s2p-api/core/services"
+	"s2p-api/interceptors"
+	"s2p-api/services"
 
 	"github.com/dgrijalva/jwt-go"
 )

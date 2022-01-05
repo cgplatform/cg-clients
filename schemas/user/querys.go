@@ -3,10 +3,11 @@ package user
 import (
 	"errors"
 	"fmt"
-	"s2p-api/core/interceptors"
-	"s2p-api/core/reflection"
-	"s2p-api/core/services"
 	"time"
+
+	"s2p-api/core/reflection"
+	"s2p-api/interceptors"
+	"s2p-api/services"
 
 	"github.com/dgrijalva/jwt-go"
 	"go.mongodb.org/mongo-driver/bson"
