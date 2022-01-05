@@ -38,7 +38,7 @@ func SendVerificationTo(email string, name string, token string) {
 	message.SetTemplate("verify")
 
 	message.AddTemplateVariable("first_name", name)
-	message.AddTemplateVariable("token", "CONFIRMAR EMAIL")
+	message.AddTemplateVariable("token", token)
 
 	Send(message)
 }
@@ -53,7 +53,7 @@ func SendRecoveryTo(email string, name string, token string) {
 	message.SetTemplate("recovery")
 
 	message.AddTemplateVariable("first_name", name)
-	message.AddTemplateVariable("token", "CONFIRMAR EMAIL")
+	message.AddTemplateVariable("token", token)
 
 	Send(message)
 }
