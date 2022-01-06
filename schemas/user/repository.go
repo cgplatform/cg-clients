@@ -161,25 +161,23 @@ func DeleteTokenByAlias(alias string, user *User) (*User, error) {
 	return Update(filter, update)
 }
 
-func TryLogin(login LoginRequest) (bool, string) {
+func TryLogin(login LoginRequest) (bool, *User) {
 
 	collection := database.GetCollection("users")
 
 	filter := bson.M{"email": login.Email}
 
-	var result bson.M
-	err := collection.FindOne(ctx, filter).Decode(&result)
+	var user User
+	err := collection.FindOne(ctx, filter).Decode(&user)
 
 	if err != nil {
-		return false, ""
+		return false, nil
 	}
 
-	id := result["_id"].(primitive.ObjectID).Hex()
-
-	if result["password"].(string) == login.Password {
-		return true, id
+	if user.Password == login.Password {
+		return true, &user
 	}
 
-	return false, ""
+	return false, nil
 
 }

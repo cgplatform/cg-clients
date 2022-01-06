@@ -36,7 +36,6 @@ func main() {
 	} else {
 		log.Infoln("[Schema-Manager]: Schema was generated successfully")
 	}
-	
 	address := config.HTTP.Address + ":" + config.HTTP.Port
 	log.Infoln("Starting server on:", address)
 	if err := http.ListenAndServe(address, nil); err != nil {

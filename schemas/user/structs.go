@@ -7,6 +7,7 @@ type User struct {
 	Phone     string `bson:"phone"`
 	Password  string `bson:"password"`
 	Birthdate string `bson:"birthdate"`
+	Verified  bool   `bson:"verified"`
 }
 
 var UserInstance = User{}
@@ -37,3 +38,9 @@ type ResetPasswordRequest struct {
 }
 
 var ResetPasswordInstance = ResetPasswordRequest{}
+
+type EmailConfirmationRequest struct {
+	Token string `bson:"token"`
+}
+
+var EmailConfirmationInstance = EmailConfirmationRequest{}
