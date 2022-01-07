@@ -1,14 +1,14 @@
 package interceptors
 
 import (
-	"errors"
+	"s2p-api/exceptions"
 
 	"github.com/dgrijalva/jwt-go"
 )
 
 func IsLoggedIn(request interface{}, session jwt.MapClaims) (bool, error) {
 	if session == nil {
-		return false, errors.New("not authorized")
+		return false, exceptions.USER_NOT_AUTHORIZED
 	} else {
 		return true, nil
 	}
