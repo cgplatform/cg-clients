@@ -18,12 +18,21 @@ type post struct {
 	Variables map[string]interface{} `json:"variables"`
 }
 
-func HttpInterceptor(pointers *Pointers, responseWriter http.ResponseWriter, request *http.Request) {
+func HttpInterceptor(pointers *Pointers, response http.ResponseWriter, request *http.Request) {
 	schema := pointers.Schema
 	fields := pointers.Fields
+
+	response.Header().Set("Access-Control-Allow-Origin", "*")
+	response.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	response.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, Token")
+
+	if request.Method == "OPTIONS" {
+		return
+	}
+
 	var p post
 	if err := json.NewDecoder(request.Body).Decode(&p); err != nil {
-		responseWriter.WriteHeader(400)
+		response.WriteHeader(400)
 		return
 	}
 
@@ -45,7 +54,7 @@ func HttpInterceptor(pointers *Pointers, responseWriter http.ResponseWriter, req
 		},
 	})
 
-	if error := json.NewEncoder(responseWriter).Encode(result); error != nil {
+	if error := json.NewEncoder(response).Encode(result); error != nil {
 		log.Errorln("Could not write result to response:", error)
 	}
 }
