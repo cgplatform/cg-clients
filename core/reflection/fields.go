@@ -1,23 +1,27 @@
 package reflection
 
 import (
+	"github.com/dgrijalva/jwt-go"
 	"github.com/graphql-go/graphql"
 )
 
 type Session struct{}
 
-type Resolve func(params graphql.ResolveParams, session *Session) (interface{}, error)
+type Resolver func(request interface{}, session jwt.MapClaims) (interface{}, error)
+
+type Interceptor func(request interface{}, session jwt.MapClaims) (bool, error)
 
 type RootField struct {
 	List                   bool
 	Name                   string
-	Resolve                Resolve
+	Resolver               Resolver
 	RequestStruct          interface{}
 	ResponseStruct         interface{}
 	RequiredRequestFields  []string
 	DenyRequestFields      []string
 	DenyResponseFields     []string
 	ReflectedRequestFields StructFields
+	Interceptors           []Interceptor
 }
 
 func ReflectFields(schema *InternalSchema, rootFields []*RootField, resolve graphql.FieldResolveFn) graphql.Fields {

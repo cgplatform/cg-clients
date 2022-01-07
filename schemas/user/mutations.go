@@ -2,53 +2,78 @@ package user
 
 import (
 	"s2p-api/core/reflection"
+	"s2p-api/exceptions"
+	"s2p-api/interceptors"
+	"s2p-api/services"
+	"s2p-api/services/mail"
+	"time"
 
-	"github.com/graphql-go/graphql"
+	"github.com/dgrijalva/jwt-go"
 )
 
 var CreateField = &reflection.RootField{
 	Name:           "create",
-	Resolve:        CreateResolver,
+	Resolver:       CreateResolver,
 	RequestStruct:  UserInstance,
 	ResponseStruct: UserInstance,
 	RequiredRequestFields: []string{
 		"name",
-		"mail",
+		"email",
 		"phone",
 		"password",
 		"birthdate",
 	},
 	DenyRequestFields: []string{
 		"id",
+		"verified",
 	},
 	DenyResponseFields: []string{
 		"password",
 	},
 }
 
-func CreateResolver(params graphql.ResolveParams, session *reflection.Session) (interface{}, error) {
-	user := &User{
-		Name:      params.Args["name"].(string),
-		Mail:      params.Args["mail"].(string),
-		Phone:     params.Args["phone"].(string),
-		Password:  params.Args["password"].(string),
-		Birthdate: params.Args["birthdate"].(string),
+func CreateResolver(request interface{}, session jwt.MapClaims) (interface{}, error) {
+	user := request.(User)
+	user.Password = services.SHA256Encoder(user.Password)
+
+	userEmail := User{
+		Email: user.Email,
+	}
+	result, err := Read(userEmail)
+	if err != nil {
+		return nil, err
+	}
+	if len(result) != 0 {
+		return nil, exceptions.INVALID_EMAIL
 	}
 
-	if user, err := Create(user); err != nil {
+	createdUser, err := Create(&user)
+
+	if err != nil {
 		return nil, err
-	} else {
-		return user, nil
 	}
+
+	token, err := services.NewJWTService().GenerateToken(createdUser.ID, time.Hour*24)
+	if err != nil {
+		return nil, err
+	}
+
+	if _, err := UpdateTokenByAlias("email_confirmation", createdUser, token); err != nil {
+		return nil, err
+	}
+
+	mail.SendVerificationTo(user.Email, user.Name, token)
+	return user, nil
+
 }
 
 var UpdateField = &reflection.RootField{
 	Name:           "updateBy",
-	Resolve:        UpdateResolver,
+	Resolver:       UpdateResolver,
 	RequestStruct:  UserInstance,
 	ResponseStruct: UserInstance,
-	RequiredRequestFields: []string{
-		"id",
+	Interceptors: []reflection.Interceptor{
+		interceptors.IsLoggedIn,
 	},
 	DenyRequestFields: []string{
 		"password",
@@ -58,32 +83,101 @@ var UpdateField = &reflection.RootField{
 	},
 }
 
-func UpdateResolver(params graphql.ResolveParams, session *reflection.Session) (interface{}, error) {
-	user := &User{}
+func UpdateResolver(request interface{}, session jwt.MapClaims) (interface{}, error) {
 
-	if value, ok := params.Args["id"]; ok {
-		user.ID = value.(string)
-	}
+	user := request.(User)
 
-	if value, ok := params.Args["name"]; ok {
-		user.Name = value.(string)
-	}
+	user.ID = session["Sum"].(string)
 
-	if value, ok := params.Args["mail"]; ok {
-		user.Mail = value.(string)
-	}
-
-	if value, ok := params.Args["phone"]; ok {
-		user.Phone = value.(string)
-	}
-
-	if value, ok := params.Args["birthdate"]; ok {
-		user.Birthdate = value.(string)
-	}
-
-	if value, err := Update(user); err != nil {
+	if value, err := UpdateByUser(&user); err != nil {
 		return nil, err
 	} else {
 		return value, nil
 	}
+}
+
+var DeleteField = &reflection.RootField{
+	Name:           "delete",
+	Resolver:       DeleteResolver,
+	RequestStruct:  UserInstance,
+	ResponseStruct: DeleteResponseInstance,
+	Interceptors: []reflection.Interceptor{
+		interceptors.IsLoggedIn,
+	},
+	RequiredRequestFields: []string{
+		"password",
+	},
+}
+
+func DeleteResolver(request interface{}, session jwt.MapClaims) (interface{}, error) {
+
+	user := request.(User)
+	user.ID = session["Sum"].(string)
+
+	fullUser, err := FindById(user.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	paramPassword := services.SHA256Encoder(user.Password)
+	if paramPassword != fullUser.Password {
+		return nil, exceptions.WRONG_PASSWORD
+	}
+
+	if value, err := Delete(&user); err != nil {
+		return nil, err
+	} else {
+		return value, nil
+	}
+}
+
+var ResetPassword = &reflection.RootField{
+	List:           false,
+	Name:           "reset_password",
+	Resolver:       ResetPasswordResolver,
+	RequestStruct:  ResetPasswordInstance,
+	ResponseStruct: UserInstance,
+	RequiredRequestFields: []string{
+		"password",
+		"token",
+	},
+	DenyResponseFields: []string{
+		"password",
+	},
+}
+
+func ResetPasswordResolver(request interface{}, session jwt.MapClaims) (interface{}, error) {
+
+	resetRequest := request.(ResetPasswordRequest)
+
+	claims := services.NewJWTService().ValidateToken(resetRequest.Token)
+
+	if claims == nil {
+		return nil, exceptions.INVALID_TOKEN
+	}
+
+	user := User{
+		ID: claims["Sum"].(string),
+	}
+	_, err := FindUserByTokenAndAlias("recovery", &user, resetRequest.Token)
+
+	if err != nil {
+		return nil, exceptions.INVALID_TOKEN
+	}
+
+	_, err = DeleteTokenByAlias("recovery", &user)
+
+	if err != nil {
+		return nil, err
+	}
+
+	user.Password = services.SHA256Encoder(resetRequest.Password)
+
+	_, err = UpdateByUser(&user)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }

@@ -4,6 +4,7 @@ import (
 	"s2p-api/config"
 	"s2p-api/core"
 	"s2p-api/database"
+	"s2p-api/services"
 
 	log "github.com/sirupsen/logrus"
 
@@ -26,6 +27,8 @@ func main() {
 		log.Fatalln("[Configuration]: Could not possible to get the configuration variables", err)
 	}
 
+	services.Initialize()
+
 	database.Connect()
 
 	if err := core.Initialize(); err != nil {
@@ -33,7 +36,6 @@ func main() {
 	} else {
 		log.Infoln("[Schema-Manager]: Schema was generated successfully")
 	}
-
 	address := config.HTTP.Address + ":" + config.HTTP.Port
 	log.Infoln("Starting server on:", address)
 	if err := http.ListenAndServe(address, nil); err != nil {

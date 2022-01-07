@@ -8,9 +8,14 @@ var Schema = reflection.InternalSchema{
 	Name: "user",
 	Querys: []*reflection.RootField{
 		FilterByField,
+		Login,
+		Recovery,
+		EmailConfirmation,
 	},
 	Mutations: []*reflection.RootField{
 		CreateField,
 		UpdateField,
+		DeleteField,
+		ResetPassword,
 	},
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"s2p-api/database"
 
+	"github.com/naamancurtis/mongo-go-struct-to-bson/mapper"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -15,7 +16,6 @@ var (
 
 func Create(user *User) (*User, error) {
 	collection := database.GetCollection("users")
-
 	if result, err := collection.InsertOne(ctx, user); err != nil {
 		return nil, err
 	} else {
@@ -25,8 +25,10 @@ func Create(user *User) (*User, error) {
 	return user, nil
 }
 
-func Read(filter bson.M) ([]User, error) {
+func Read(user User) ([]User, error) {
 	collection := database.GetCollection("users")
+
+	filter := mapper.ConvertStructToBSONMap(user, &mapper.MappingOpts{GenerateFilterOrPatch: true})
 
 	var users []User
 
@@ -47,34 +49,70 @@ func Read(filter bson.M) ([]User, error) {
 	return users, nil
 }
 
-func Update(user *User) (*User, error) {
+func FindById(id string) (*User, error) {
+	collection := database.GetCollection("users")
+
+	objectID, _ := primitive.ObjectIDFromHex(id)
+
+	filter := bson.M{"_id": objectID}
+
+	var user *User
+
+	if err := collection.FindOne(ctx, filter).Decode(&user); err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
+func FindUserByTokenAndAlias(alias string, user *User, token string) (*User, error) {
 	collection := database.GetCollection("users")
 
 	objectID, _ := primitive.ObjectIDFromHex(user.ID)
 
 	filter := bson.M{"_id": objectID}
 
-	document := bson.M{}
+	filter["tokens."+alias] = token
 
-	if user.Name != "" {
-		document["name"] = user.Name
+	if err := collection.FindOne(ctx, filter).Decode(&user); err != nil {
+		return nil, err
 	}
 
-	if user.Mail != "" {
-		document["mail"] = user.Mail
+	return user, nil
+}
+
+func UpdateByUser(user *User) (*User, error) {
+	objectID, _ := primitive.ObjectIDFromHex(user.ID)
+
+	filter := bson.M{"_id": objectID}
+
+	update := mapper.ConvertStructToBSONMap(user, &mapper.MappingOpts{GenerateFilterOrPatch: true, RemoveID: true})
+
+	update = bson.M{
+		"$set": update,
 	}
 
-	if user.Phone != "" {
-		document["phone"] = user.Phone
-	}
+	return Update(filter, update)
+}
 
-	if user.Birthdate != "" {
-		document["birthdate"] = user.Birthdate
-	}
+func UpdateTokenByAlias(alias string, user *User, token string) (*User, error) {
+	documentSet := bson.M{}
+
+	objectID, _ := primitive.ObjectIDFromHex(user.ID)
+
+	filter := bson.M{"_id": objectID}
+
+	documentSet["tokens."+alias] = token
 
 	update := bson.M{
-		"$set": document,
+		"$set": documentSet,
 	}
+
+	return Update(filter, update)
+}
+
+func Update(filter bson.M, update bson.M) (*User, error) {
+	collection := database.GetCollection("users")
 
 	var updated *User
 
@@ -92,18 +130,54 @@ func Update(user *User) (*User, error) {
 	return updated, nil
 }
 
-func FilterFrom(args map[string]interface{}) bson.M {
-	result := make(bson.M, len(args))
+func Delete(user *User) (*DeleteResponse, error) {
+	collection := database.GetCollection("users")
+	objectID, _ := primitive.ObjectIDFromHex(user.ID)
 
-	for k, v := range args {
+	filter := bson.M{"_id": objectID}
 
-		if k == "id" {
-			k = "_id"
-			v, _ = primitive.ObjectIDFromHex(v.(string))
-		}
-
-		result[k] = v
+	if result, err := collection.DeleteOne(ctx, filter); err != nil {
+		return nil, err
+	} else {
+		response := &DeleteResponse{ID: user.ID, DeletedCount: result.DeletedCount}
+		return response, nil
 	}
 
-	return result
+}
+
+func DeleteTokenByAlias(alias string, user *User) (*User, error) {
+	documentUnset := bson.M{}
+
+	objectID, _ := primitive.ObjectIDFromHex(user.ID)
+
+	filter := bson.M{"_id": objectID}
+
+	documentUnset["tokens."+alias] = 1
+
+	update := bson.M{
+		"$unset": documentUnset,
+	}
+
+	return Update(filter, update)
+}
+
+func TryLogin(login LoginRequest) (bool, *User) {
+
+	collection := database.GetCollection("users")
+
+	filter := bson.M{"email": login.Email}
+
+	var user User
+	err := collection.FindOne(ctx, filter).Decode(&user)
+
+	if err != nil {
+		return false, nil
+	}
+
+	if user.Password == login.Password {
+		return true, &user
+	}
+
+	return false, nil
+
 }
