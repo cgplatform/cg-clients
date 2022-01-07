@@ -70,6 +70,7 @@ func LoginResolver(request interface{}, session jwt.MapClaims) (interface{}, err
 		}
 		response := bson.M{
 			"token": token,
+			"user":  user.ID,
 		}
 
 		return response, nil
