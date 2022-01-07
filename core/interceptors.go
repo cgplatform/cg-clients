@@ -27,7 +27,7 @@ func HttpInterceptor(pointers *Pointers, response http.ResponseWriter, request *
 	response.Header().Set("Access-Control-Allow-Headers", "*")
 
 	if request.Method == "OPTIONS" {
-		response.WriteHeader(200)
+		response.WriteHeader(204)
 		return
 	}
 
