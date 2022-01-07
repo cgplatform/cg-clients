@@ -32,7 +32,7 @@ func HttpInterceptor(pointers *Pointers, response http.ResponseWriter, request *
 
 	var p post
 	if err := json.NewDecoder(request.Body).Decode(&p); err != nil {
-		response.WriteHeader(400)
+		response.WriteHeader(401)
 		return
 	}
 
