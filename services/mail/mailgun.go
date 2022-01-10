@@ -11,7 +11,7 @@ import (
 var (
 	mg      *mailgun.MailgunImpl
 	senders = map[string]string{
-		"noreply": "noreply@start2play.games",
+		"noreply": "Start2Play <noreply@start2play.games>",
 	}
 )
 
