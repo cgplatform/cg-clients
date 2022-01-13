@@ -26,15 +26,19 @@ var CreateField = &reflection.RootField{
 	DenyRequestFields: []string{
 		"id",
 		"verified",
+		"type",
 	},
 	DenyResponseFields: []string{
 		"password",
+		"type",
 	},
 }
 
 func CreateResolver(request interface{}, session jwt.MapClaims) (interface{}, error) {
 	user := request.(User)
 	user.Password = services.SHA256Encoder(user.Password)
+	user.Type = "client"
+	user.Verified = false
 
 	userEmail := User{
 		Email: user.Email,
@@ -77,9 +81,11 @@ var UpdateField = &reflection.RootField{
 	},
 	DenyRequestFields: []string{
 		"password",
+		"type",
 	},
 	DenyResponseFields: []string{
 		"password",
+		"type",
 	},
 }
 

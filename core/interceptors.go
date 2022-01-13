@@ -43,8 +43,6 @@ func HttpInterceptor(pointers *Pointers, response http.ResponseWriter, request *
 		claims = services.NewJWTService().ValidateToken(token[0])
 	}
 
-	key := request.Header.Get("Key")
-
 	result := graphql.Do(graphql.Params{
 
 		Context:        request.Context(),
@@ -55,7 +53,6 @@ func HttpInterceptor(pointers *Pointers, response http.ResponseWriter, request *
 		RootObject: map[string]interface{}{
 			"fields": fields,
 			"claims": claims,
-			"key":    key,
 		},
 	})
 
@@ -71,14 +68,12 @@ func ExecutionInterceptor(params graphql.ResolveParams) (interface{}, error) {
 
 	session := rootObject["claims"].(jwt.MapClaims)
 
-	key := rootObject["key"].(string)
-
 	instance := reflect.New(reflect.TypeOf(field.RequestStruct)).Elem().Interface()
 	mapstructure.Decode(params.Args, &instance)
 
 	for _, interceptor := range field.Interceptors {
 
-		if ok, err := interceptor(instance, session, key); err != nil {
+		if ok, err := interceptor(instance, session); err != nil {
 			return ok, err
 		}
 

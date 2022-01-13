@@ -13,6 +13,7 @@ var CreateField = &reflection.RootField{
 	RequestStruct:  GameInstance,
 	ResponseStruct: GameInstance,
 	Interceptors: []reflection.Interceptor{
+		interceptors.IsLoggedIn,
 		interceptors.IsAdmin,
 	},
 	RequiredRequestFields: []string{

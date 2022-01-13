@@ -8,6 +8,7 @@ type User struct {
 	Password  string `bson:"password"`
 	Birthdate string `bson:"birthdate"`
 	Verified  bool   `bson:"verified"`
+	Type      string `bson:"type"`
 }
 
 var UserInstance = User{}
