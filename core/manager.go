@@ -3,7 +3,6 @@ package core
 import (
 	"net/http"
 	"s2p-api/core/reflection"
-	"s2p-api/schemas/game"
 	"s2p-api/schemas/user"
 )
 
@@ -20,7 +19,7 @@ var (
 
 func registerSchemas() {
 	registerSchema(&user.Schema)
-	registerSchema(&game.Schema)
+
 }
 
 func registerSchema(schema *reflection.InternalSchema) {
