@@ -9,7 +9,7 @@ type Session struct{}
 
 type Resolver func(request interface{}, session jwt.MapClaims) (interface{}, error)
 
-type Interceptor func(request interface{}, session jwt.MapClaims) (bool, error)
+type Interceptor func(request interface{}, session jwt.MapClaims, key string) (bool, error)
 
 type RootField struct {
 	List                   bool

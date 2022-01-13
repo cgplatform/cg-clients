@@ -6,7 +6,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
-func IsLoggedIn(request interface{}, session jwt.MapClaims) (bool, error) {
+func IsLoggedIn(request interface{}, session jwt.MapClaims, key string) (bool, error) {
 	if session == nil {
 		return false, exceptions.USER_NOT_AUTHORIZED
 	} else {
