@@ -17,7 +17,7 @@ var (
 )
 
 func Connect() error {
-	uri := fmt.Sprintf("mongodb+srv://%s:%s@%s/?tlsInsecure=true",
+	uri := fmt.Sprintf("mongodb+srv://%s:%s@%s",
 		config.Mongo.User,
 		config.Mongo.Password,
 		config.Mongo.Host)
