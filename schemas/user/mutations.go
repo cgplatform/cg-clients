@@ -57,7 +57,7 @@ func CreateResolver(request interface{}, session jwt.MapClaims) (interface{}, er
 		return nil, err
 	}
 
-	token, err := services.NewJWTService().GenerateToken(createdUser.ID, time.Hour*24)
+	token, err := services.GenerateToken(createdUser.ID, time.Hour*24)
 	if err != nil {
 		return nil, err
 	}
@@ -156,7 +156,7 @@ func ResetPasswordResolver(request interface{}, session jwt.MapClaims) (interfac
 
 	resetRequest := request.(ResetPasswordRequest)
 
-	claims := services.NewJWTService().ValidateToken(resetRequest.Token)
+	claims := services.ValidateToken(resetRequest.Token)
 
 	if claims == nil {
 		return nil, exceptions.INVALID_TOKEN

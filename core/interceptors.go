@@ -40,7 +40,7 @@ func HttpInterceptor(pointers *Pointers, response http.ResponseWriter, request *
 
 	var claims jwt.MapClaims
 	if token := request.Header["Token"]; token != nil {
-		claims = services.NewJWTService().ValidateToken(token[0])
+		claims = services.ValidateToken(token[0])
 	}
 
 	result := graphql.Do(graphql.Params{

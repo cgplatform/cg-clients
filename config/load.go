@@ -22,10 +22,16 @@ type MailConfig struct {
 	Key    string `env:"MAIL_KEY"`
 }
 
+type JwtService struct {
+	SecretKey string `env:"SECRET_KEY"`
+	Isr       string `env:"ISR"`
+}
+
 var (
 	Mongo = MongoConfig{}
 	HTTP  = HTTPConfig{}
 	Mail  = MailConfig{}
+	Jwt   = JwtService{}
 )
 
 func Load() error {
@@ -46,6 +52,10 @@ func Load() error {
 	}
 
 	if err := env.Parse(&Mail, opts); err != nil {
+		return err
+	}
+
+	if err := env.Parse(&Jwt, opts); err != nil {
 		return err
 	}
 
