@@ -22,7 +22,7 @@ var LoginRequestInstance = LoginRequest{}
 
 type LoginResponse struct {
 	Token string `bson:"token"`
-	ID    string `bson:"id"`
+	Email string `bson:"email"`
 }
 
 var LoginResponseInstance = LoginResponse{}

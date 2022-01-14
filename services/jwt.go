@@ -8,15 +8,12 @@ import (
 )
 
 type jwtService struct {
-	secretKey string
-	isr       string
+	secretKey string `env:"SECRET_KEY"`
+	isr       string `env:"ISR"`
 }
 
 func NewJWTService() *jwtService {
-	return &jwtService{
-		secretKey: "s2play-awl",
-		isr:       "s2p-api",
-	}
+	return &jwtService{}
 }
 
 type Claim struct {

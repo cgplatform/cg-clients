@@ -73,7 +73,7 @@ func LoginResolver(request interface{}, session jwt.MapClaims) (interface{}, err
 		}
 		response := bson.M{
 			"token": token,
-			"id":    user.ID,
+			"email": user.Email,
 		}
 
 		return response, nil
@@ -183,7 +183,10 @@ func EmailConfirmationResolver(request interface{}, session jwt.MapClaims) (inte
 	if err != nil {
 		return nil, err
 	}
-	response := bson.M{"token": token}
+	response := bson.M{
+		"token": token,
+		"email": user.Email,
+	}
 
 	if _, err := UpdateTokenByAlias("login", &user, token); err != nil {
 		return nil, err
