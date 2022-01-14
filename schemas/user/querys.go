@@ -64,6 +64,9 @@ func LoginResolver(request interface{}, session jwt.MapClaims) (interface{}, err
 	isCredentialsValid, user := TryLogin(login)
 
 	if isCredentialsValid {
+		if !user.Verified {
+			return nil, exceptions.USER_NOT_VERIFIED
+		}
 		token, err := services.NewJWTService().GenerateTokenDefault(user.ID)
 		if err != nil {
 			return nil, err
