@@ -8,6 +8,7 @@ type User struct {
 	Password  string `bson:"password"`
 	Birthdate string `bson:"birthdate"`
 	Verified  bool   `bson:"verified"`
+	Type      string `bson:"type"`
 }
 
 var UserInstance = User{}
@@ -21,7 +22,7 @@ var LoginRequestInstance = LoginRequest{}
 
 type LoginResponse struct {
 	Token string `bson:"token"`
-	ID    string `bson:"id"`
+	Email string `bson:"email"`
 }
 
 var LoginResponseInstance = LoginResponse{}

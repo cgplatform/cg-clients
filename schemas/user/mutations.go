@@ -26,15 +26,19 @@ var CreateField = &reflection.RootField{
 	DenyRequestFields: []string{
 		"id",
 		"verified",
+		"type",
 	},
 	DenyResponseFields: []string{
 		"password",
+		"type",
 	},
 }
 
 func CreateResolver(request interface{}, session jwt.MapClaims) (interface{}, error) {
 	user := request.(User)
 	user.Password = services.SHA256Encoder(user.Password)
+	user.Type = "client"
+	user.Verified = false
 
 	userEmail := User{
 		Email: user.Email,
@@ -53,7 +57,7 @@ func CreateResolver(request interface{}, session jwt.MapClaims) (interface{}, er
 		return nil, err
 	}
 
-	token, err := services.NewJWTService().GenerateToken(createdUser.ID, time.Hour*24)
+	token, err := services.GenerateToken(createdUser.ID, time.Hour*24)
 	if err != nil {
 		return nil, err
 	}
@@ -77,9 +81,11 @@ var UpdateField = &reflection.RootField{
 	},
 	DenyRequestFields: []string{
 		"password",
+		"type",
 	},
 	DenyResponseFields: []string{
 		"password",
+		"type",
 	},
 }
 
@@ -150,7 +156,7 @@ func ResetPasswordResolver(request interface{}, session jwt.MapClaims) (interfac
 
 	resetRequest := request.(ResetPasswordRequest)
 
-	claims := services.NewJWTService().ValidateToken(resetRequest.Token)
+	claims := services.ValidateToken(resetRequest.Token)
 
 	if claims == nil {
 		return nil, exceptions.INVALID_TOKEN

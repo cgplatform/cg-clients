@@ -19,6 +19,7 @@ var (
 
 func registerSchemas() {
 	registerSchema(&user.Schema)
+
 }
 
 func registerSchema(schema *reflection.InternalSchema) {

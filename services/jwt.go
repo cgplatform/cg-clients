@@ -2,39 +2,28 @@ package services
 
 import (
 	"fmt"
+	"s2p-api/config"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
 )
-
-type jwtService struct {
-	secretKey string
-	isr       string
-}
-
-func NewJWTService() *jwtService {
-	return &jwtService{
-		secretKey: "s2play-awl",
-		isr:       "s2p-api",
-	}
-}
 
 type Claim struct {
 	Sum string `bson:"sum"`
 	jwt.StandardClaims
 }
 
-func (s *jwtService) GenerateToken(id string, duration time.Duration) (string, error) {
+func GenerateToken(id string, duration time.Duration) (string, error) {
 	claim := &Claim{
 		id,
 		jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(duration).Unix(),
-			Issuer:    s.isr,
+			Issuer:    config.Jwt.Isr,
 			IssuedAt:  time.Now().Unix(),
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
-	t, err := token.SignedString([]byte(s.secretKey))
+	t, err := token.SignedString([]byte(config.Jwt.SecretKey))
 
 	if err != nil {
 		return "", err
@@ -43,16 +32,16 @@ func (s *jwtService) GenerateToken(id string, duration time.Duration) (string, e
 	return t, nil
 }
 
-func (s *jwtService) GenerateTokenDefault(id string) (string, error) {
-	return s.GenerateToken(id, time.Hour*12)
+func GenerateTokenDefault(id string) (string, error) {
+	return GenerateToken(id, time.Hour*12)
 }
 
-func (s *jwtService) ValidateToken(token string) jwt.MapClaims {
+func ValidateToken(token string) jwt.MapClaims {
 	keyFunction := func(t *jwt.Token) (interface{}, error) {
 		if _, isValid := t.Method.(*jwt.SigningMethodHMAC); !isValid {
 			return nil, fmt.Errorf("invalid token")
 		}
-		return []byte(s.secretKey), nil
+		return []byte(config.Jwt.SecretKey), nil
 	}
 
 	tk, err := jwt.Parse(token, keyFunction)
