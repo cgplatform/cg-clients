@@ -48,6 +48,7 @@ var UpdateField = &reflection.RootField{
 	ResponseStruct: GameInstance,
 	Interceptors: []reflection.Interceptor{
 		interceptors.IsLoggedIn,
+		interceptors.IsAdmin,
 	},
 	DenyRequestFields: []string{
 		"id",

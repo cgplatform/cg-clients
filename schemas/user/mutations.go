@@ -57,7 +57,7 @@ func CreateResolver(request interface{}, session jwt.MapClaims) (interface{}, er
 		return nil, err
 	}
 
-	token, err := services.GenerateToken(createdUser.ID, time.Hour*24)
+	token, err := services.GenerateToken(createdUser.ID, createdUser.Type, time.Hour*24)
 	if err != nil {
 		return nil, err
 	}

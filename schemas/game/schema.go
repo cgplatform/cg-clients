@@ -5,9 +5,12 @@ import (
 )
 
 var Schema = reflection.InternalSchema{
-	Name:   "game",
-	Querys: []*reflection.RootField{},
+	Name: "game",
+	Querys: []*reflection.RootField{
+		FilterByField,
+	},
 	Mutations: []*reflection.RootField{
 		CreateField,
+		UpdateField,
 	},
 }
