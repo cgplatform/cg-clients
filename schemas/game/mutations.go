@@ -40,3 +40,33 @@ func CreateResolver(request interface{}, session jwt.MapClaims) (interface{}, er
 	return createdGame, nil
 
 }
+
+var UpdateField = &reflection.RootField{
+	Name:           "updateBy",
+	Resolver:       UpdateResolver,
+	RequestStruct:  GameInstance,
+	ResponseStruct: GameInstance,
+	Interceptors: []reflection.Interceptor{
+		interceptors.IsLoggedIn,
+		interceptors.IsAdmin,
+	},
+	DenyRequestFields: []string{
+		"id",
+	},
+	DenyResponseFields: []string{
+		"id",
+	},
+}
+
+func UpdateResolver(request interface{}, session jwt.MapClaims) (interface{}, error) {
+
+	game := request.(Game)
+
+	game.ID = session["Sum"].(string)
+
+	if value, err := UpdateByGame(&game); err != nil {
+		return nil, err
+	} else {
+		return value, nil
+	}
+}

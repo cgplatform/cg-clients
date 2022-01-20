@@ -67,7 +67,7 @@ func LoginResolver(request interface{}, session jwt.MapClaims) (interface{}, err
 		if !user.Verified {
 			return nil, exceptions.USER_NOT_VERIFIED
 		}
-		token, err := services.GenerateTokenDefault(user.ID)
+		token, err := services.GenerateTokenDefault(user.ID, user.Type)
 		if err != nil {
 			return nil, err
 		}
@@ -122,7 +122,7 @@ func RecoveryResolver(request interface{}, session jwt.MapClaims) (interface{}, 
 
 	user = users[0]
 
-	token, err := services.GenerateToken(user.ID, time.Hour*24)
+	token, err := services.GenerateToken(user.ID, user.Type, time.Hour*24)
 
 	if err != nil {
 		return nil, err
@@ -179,7 +179,7 @@ func EmailConfirmationResolver(request interface{}, session jwt.MapClaims) (inte
 		return nil, err
 	}
 
-	token, err := services.GenerateTokenDefault(user.ID)
+	token, err := services.GenerateTokenDefault(user.ID, user.Type)
 	if err != nil {
 		return nil, err
 	}

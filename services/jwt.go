@@ -9,13 +9,15 @@ import (
 )
 
 type Claim struct {
-	Sum string `bson:"sum"`
+	Sum  string `bson:"sum"`
+	Kind string `bson:"kind"`
 	jwt.StandardClaims
 }
 
-func GenerateToken(id string, duration time.Duration) (string, error) {
+func GenerateToken(id string, kind string, duration time.Duration) (string, error) {
 	claim := &Claim{
 		id,
+		kind,
 		jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(duration).Unix(),
 			Issuer:    config.Jwt.Isr,
@@ -32,8 +34,8 @@ func GenerateToken(id string, duration time.Duration) (string, error) {
 	return t, nil
 }
 
-func GenerateTokenDefault(id string) (string, error) {
-	return GenerateToken(id, time.Hour*12)
+func GenerateTokenDefault(id string, kind string) (string, error) {
+	return GenerateToken(id, kind, time.Hour*12)
 }
 
 func ValidateToken(token string) jwt.MapClaims {
