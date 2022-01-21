@@ -7,6 +7,7 @@ type Game struct {
 	Developer   string `bson:"developer"`
 	PlatForm    string `bson:"platform"`
 	Category    string `bson:"category"`
+	Highlight   bool   `bson:"highlight"`
 }
 
 var GameInstance = Game{}
