@@ -22,6 +22,7 @@ var CreateField = &reflection.RootField{
 		"developer",
 		"category",
 		"platform",
+		"alta",
 	},
 	DenyRequestFields: []string{
 		"id",
